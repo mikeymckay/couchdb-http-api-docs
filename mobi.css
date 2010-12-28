@@ -1,0 +1,13 @@
+ul {
+   margin: 20px;
+}
+
+ol {
+   margin: 20px;
+}
+
+body pre {
+   margin: 10px;
+   /* font-weight: bold; */
+   white-space: pre-wrap; /* css-3 */
+}
