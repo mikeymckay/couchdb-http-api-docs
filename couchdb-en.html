@@ -1,0 +1,1282 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+ 	<title>CouchDB HTTP API Docs</titl
+ 	<link rel="stylesheet" href="couchdb.css" type="text/css" media="all" /> </head>
+ <body>
+
+<h1>Database</h1>
+
+<h2>Database Intro</h2>
+
+<p>A new db is specified like this:</p>
+
+<pre><code>db = new CouchDB("spec_db", {"X-Couch-Full-Commit":"false"});
+</code></pre>
+
+<p>It then has to be <a href="/createDb">created</a> before you can do anything with it.</p>
+
+<h2>.request()</h2>
+
+<h3>db.request(method, uri, requestOptions)</h3>
+
+<h3>Description</h3>
+
+<p>Combines the headers of the <a href="/database-intro">db</a> with the requestOptions and passes the parameters to <a href="/request">CouchDB.request</a>, which creates a <a href="/newXhr">new XMLHTTPRequest</a>.</p>
+
+<h3>Results</h3>
+
+<p>The XMLHTTPRequest has been sent with the given parameters and the headers options of the db.</p>
+
+<h3>Returns</h3>
+
+<p>A new XMLHTTPRequest with readyState 4 as made by <a href="/request">CouchDB.request</a>.</p>
+
+<h3>Example</h3>
+
+<pre><code> db.request("GET", "/test_db")
+</code></pre>
+
+<h2>.createDb()</h2>
+
+<h3>db.createDb()</h3>
+
+<h3>Description</h3>
+
+<p>Creates the db.</p>
+
+<h3>Results</h3>
+
+<p>The db is created, with update sequence 0.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h2>.deleteDb()</h2>
+
+<h3>db.deleteDb()</h3>
+
+<h3>Description</h3>
+
+<p>Deletes the db.</p>
+
+<h3>Results</h3>
+
+<p>The db is deleted.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h2>.ensureFullCommit()</h2>
+
+<h3>db.ensureFullCommit()</h3>
+
+<h3>Description</h3>
+
+<p>Does a POST request to the db and "_ensure_full_commit"</p>
+
+<h3>Results</h3>
+
+<p>Tells the db to do an fsync (write data to disk immediately).</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok" : true} 
+</code></pre>
+
+<p>and the start time of the db instance.</p>
+
+<h2>.query()</h2>
+
+<h3>db.query(mapFun, reduceFun, options, keys, language)</h3>
+
+<h3>Description</h3>
+
+<p>Applies the mandatory map function and the optional reduce function to the contents of database and returns the results.
+Options can include the <a href="http://wiki.apache.org/couchdb/HTTP_view_API#Querying_Options">Querying Options of the HTTP view API</a>.
+The result can be specified more by querying only for single keys.
+The language of the query has to be specified when another language than the default JavaScript is used. <a href="/http://wiki.apache.org/couchdb/EnableErlangViews">Erlang views have to be enabled</a> beforehand.</p>
+
+<h3>Returns</h3>
+
+<p>The total number of rows and an array of rows, each row containing one result of the query.</p>
+
+<h3>Example</h3>
+
+<pre><code> db.query("function(doc) { emit(doc._id, null); }", null, {"include_docs":"true"}, ["123", "456"])
+</code></pre>
+
+<h2>.view()</h2>
+
+<h3>db.view(viewname, options, keys)</h3>
+
+<h3>Description</h3>
+
+<p>Applies the view to the contents of database and returns the results. When there are no keys given, it does a GET request to the view path with the options as params, or a POST request with the keys as body.
+Options can include the <a href="http://wiki.apache.org/couchdb/HTTP_view_API#Querying_Options">Querying Options of the HTTP view API</a>.
+The result can be specified more by querying only for single keys.</p>
+
+<h3>Returns</h3>
+
+<p>The total number of rows and an array of rows, each row containing one result of the query, or null when the view doesn't exist.</p>
+
+<h3>Example</h3>
+
+<pre><code>db.view('spec_db/viewname', {"include_docs":"true"}, ["456"])
+</code></pre>
+
+<h2>.info()</h2>
+
+<h3>db.info()</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to the db.</p>
+
+<h3>Returns</h3>
+
+<p>db_name, doc_count, doc_del_count, update_seq, purge_seq, compact_running, disk_size, instance_start_time, disk_format_version</p>
+
+<h2>.allDocs()</h2>
+
+<h3>db.allDocs(options, keys)</h3>
+
+<h3>Description</h3>
+
+<p>When there are no keys given, it does a GET request to "_all_docs" with the options as params, or a POST request with the keys as body.
+Options can include the <a href="http://wiki.apache.org/couchdb/HTTP_view_API#Querying_Options">Querying Options of the HTTP view API</a>.
+The result can be specified more by querying only for single keys.</p>
+
+<h3>Returns</h3>
+
+<p>The total number of rows and an array of rows, each row containing one result of the query.</p>
+
+<h3>Example</h3>
+
+<pre><code>db.allDocs({"include_docs":"true"}, ["456"])
+</code></pre>
+
+<h2>.changes()</h2>
+
+<h3>db.changes(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to "_changes" with the options as params.
+Options can include the <a href="http://wiki.apache.org/couchdb/HTTP_database_API#Changes">Changes Options of the HTTP database API</a>.</p>
+
+<h3>Returns</h3>
+
+<p>The last sequence and an array with results. Each result contains the ID and sequence of the changed document and an array with all the changes. For each change the revision is specified.</p>
+
+<h3>Example</h3>
+
+<pre><code>db.changes({"since":"1"})
+</code></pre>
+
+<h2>.compact()</h2>
+
+<h3>db.compact()</h3>
+
+<h3>Description</h3>
+
+<p>Does a POST request to the db and "_compact". Compacts the db.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h2>.viewCleanup()</h2>
+
+<h3>db.viewCleanup()</h3>
+
+<h3>Description</h3>
+
+<p>Does a POST request to the db and "_view_cleanup". Cleans old view output from disk.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h2>.setDbProperty()</h2>
+
+<h3>db.setDbProperty(propId, propValue)</h3>
+
+<h3>Description</h3>
+
+<p>Does a PUT request to the db and the propId with the propValue as body.</p>
+
+<h3>Results</h3>
+
+<p>The db property is set to the specified value.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h3>Example</h3>
+
+<pre><code>db.setDbProperty("_revs_limit", 1500)
+</code></pre>
+
+<h2>.getDbProperty()</h2>
+
+<h3>db.getDbProperty(propId)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to the db and the propId.</p>
+
+<h3>Returns</h3>
+
+<p>The property value.</p>
+
+<h3>Example</h3>
+
+<pre><code>db.getDbProperty("_revs_limit")
+</code></pre>
+
+<h2>.setSecObj()</h2>
+
+<h3>db.setSecObj(secObj)</h3>
+
+<h3>Description</h3>
+
+<p>Does a PUT request to the db and "_security" with the security object as body.</p>
+
+<h3>Results</h3>
+
+<p>The security object is set to the specified value.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h3>Example</h3>
+
+<pre><code>db.setSecObj({"admins" : {"names" : ["laura"], "roles" : ["boss"]}})
+</code></pre>
+
+<h2>.getSecObj()</h2>
+
+<h3>db.getSecObj(propId)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to the db and "_security".</p>
+
+<h3>Returns</h3>
+
+<p>The security object.</p>
+<h1>Design Docs</h1>
+
+<h2>.allDesignDocs()</h2>
+
+<h3>CouchDB.allDesignDocs()</h3>
+
+<h3>Description</h3>
+
+<p>Goes through <a href="/allDbs">all dbs</a> and returns all <a href="/designDocs">design docs</a> for each db.</p>
+
+<h3>Returns</h3>
+
+<p>An array with all dbs, for each db the id and revision of every design document.</p>
+
+<h3>Example</h3>
+
+<p>When there is one database "test_db" and one design document "mydesign", the result is this:</p>
+
+<pre><code>{"test_db": {"total_rows": 1, "offset": 0, "rows": [{"id": "_design/spec_db", "key": "_design/mydesign", "value": {"rev": "1-3885802b8f5804e8f03cda99df8e6cc7"}}]}}
+</code></pre>
+
+<h2>.designInfo()</h2>
+
+<h3>db.designInfo(docId)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to the db, the docId and "/_info".</p>
+
+<h3>Returns</h3>
+
+<p>The name of the design document and the view_index with the attributes: "signature", "language", "disk_size", "updater_running", "compact_running", "waiting_commit", "waiting_clients", "update_seq", "purge_seq"</p>
+
+<h2>.designDocs()</h2>
+
+<h3>db.designDocs()</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to "_all_docs" and filters out only the design documents.</p>
+
+<h3>Returns</h3>
+
+<p>All design documents of a db.</p>
+<h1>Documents</h1>
+
+<h2>.save()</h2>
+
+<h3>db.save(doc, options)</h3>
+
+<h3>Description</h3>
+
+<p>Sets a docId when the document doesn't contain an _id attribute. Then does a PUT request to the db and the docId with the options as params and the doc as body.</p>
+
+<h3>Results</h3>
+
+<p>A saved document with an ID.</p>
+
+<h3>Returns</h3>
+
+<p>ID and revision of the saved document.</p>
+
+<h3>Example</h3>
+
+<pre><code>db.save(doc, {"batch" : "ok"})
+</code></pre>
+
+<h2>.open()</h2>
+
+<h3>db.open(docId, options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to the db and the docId with the options as params.</p>
+
+<h3>Returns</h3>
+
+<p>The document, or null when the document doesn't exist.</p>
+
+<h3>Example</h3>
+
+<pre><code>db.open("123", {"revs" : "true"})
+</code></pre>
+
+<h2>.deleteDoc()</h2>
+
+<h3>db.deleteDoc(doc)</h3>
+
+<h3>Description</h3>
+
+<p>Does a DELETE request to the db and the docId with the revision as param. The current revision of the document has to be specified, otherwise the request results in a 409 error.</p>
+
+<h3>Results</h3>
+
+<p>The document is deleted (that means the document has the "deleted":true attribute).</p>
+
+<h3>Returns</h3>
+
+<p>ID and revision of the deleted document.</p>
+
+<h3>Example</h3>
+
+<pre><code>db.deleteDoc({_id : "123", _rev : "1-04d86233b3254bb5a53dcf7103f97fc2"})
+</code></pre>
+
+<h2>.deleteDocAttachment()</h2>
+
+<h3>db.deleteDocAttachment(doc, attachment_name)</h3>
+
+<h3>Description</h3>
+
+<p>Does a DELETE request to the db and the docId and the attachment_name with the revision as param. The current revision of the document has to be specified, otherwise the request results in a 409 error.</p>
+
+<h3>Results</h3>
+
+<p>The attachment is deleted, the document stays intact otherwise.</p>
+
+<h3>Returns</h3>
+
+<p>ID and revision of the document whose attachment has been deleted.</p>
+
+<h3>Example</h3>
+
+<pre><code>db.deleteDocAttachment({_id : "123", _rev : "1-04d86233b3254bb5a53dcf7103f97fc2"}, "attachment.txt")
+</code></pre>
+
+<h2>.bulkSave()</h2>
+
+<h3>db.bulkSave(docs, options)</h3>
+
+<h3>Description</h3>
+
+<p>Sets a docId in each document when it doesn't contain an <em>id attribute. Then does a POST request to the db and </em>bulk_docs with the docs and the options as body.</p>
+
+<h3>Results</h3>
+
+<p>All the documents are saved with an ID.</p>
+
+<h3>Returns</h3>
+
+<p>An array with an element for each document that contains ID and revision of the document.</p>
+
+<h3>Example</h3>
+
+<pre><code>doc1 = {"foo":"bar"}
+doc2 = {"foo":"baz"}
+db.bulkSave([doc1, doc2])
+</code></pre>
+<h1>Security</h1>
+
+<h2>Security Intro</h2>
+
+<p>The default authentication db is called "_users". In this db the information about the users is stored. You can change the authentication db like this:</p>
+
+<pre><code>users_db = new CouchDB("custom_users_db");
+users_db.createDb();
+
+CouchDB.request("PUT", "/_config/couch_httpd_auth/authentication_db", { body: JSON.stringify("custom_users_db")});
+</code></pre>
+
+<p>You can "signup" like this:</p>
+
+<pre><code>userDoc = CouchDB.prepareUserDoc({name: "username", roles: ["customrole"]}, "secretpassword");
+
+users_db.save(userDoc);
+</code></pre>
+
+<h2>.login()</h2>
+
+<h3>CouchDB.login("username", "secretpassword")</h3>
+
+<h3>Description</h3>
+
+<p>Does a POST request to "_session" with the user details.</p>
+
+<h3>Results</h3>
+
+<p>A created <a href="/session">session</a> with the user name and roles.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok": true, "name": "username", "roles": ["customrole"]}
+</code></pre>
+
+<h3>Prerequisites</h3>
+
+<p>A user doc <a href="/prepareUserDoc">prepareUserDoc</a>, saved in an <a href="/security-intro">authentication db</a>.</p>
+
+<h2>.logout()</h2>
+
+<h3>CouchDB.logout()</h3>
+
+<h3>Description</h3>
+
+<p>Does a DELETE request to "_session".</p>
+
+<h3>Results</h3>
+
+<p>The <a href="/session">session's</a> user name is set to null and the custom role is removed from the roles array.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok": true}
+</code></pre>
+
+<h3>Prerequisites</h3>
+
+<p>A user <a href="/session">session</a>, as created by <a href="/login">login</a>.</p>
+
+<h2>.session()</h2>
+
+<h3>CouchDB.session(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to "_session".</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok": true, "userCtx": {"name": "username", "roles": ["customrole"]}, "info": {"authentication_db": "_users", "authentication_handlers": ["oauth", "cookie", "default"], "authenticated": "cookie"}}
+</code></pre>
+
+<h3>Prerequisites</h3>
+
+<p>A user <a href="/session">session</a>, as created by <a href="/login">login</a>. When there is no session, userCtx.name is null.</p>
+
+<h2>.prepareUserDoc()</h2>
+
+<h3>CouchDB.prepareUserDoc(userDoc, "secretpassword")</h3>
+
+<h3>Description</h3>
+
+<ul>
+<li>Hashes the password</li>
+<li>Adds an empty roles array to the userDoc when not specified</li>
+<li>Adds an _id, composed of user_prefix and name, to the userDoc when not specified</li>
+</ul>
+
+
+<h3>Returns</h3>
+
+<pre><code>{"name": "username", "roles": ["customrole"], "_id": "org.couchdb.user:customrole", "salt":"a salt", "password_sha": "hashed password", "type":"user"}
+</code></pre>
+
+<h3>Example</h3>
+
+<pre><code>CouchDB.prepareUserDoc({name: "username", roles: ["customrole"]}, "secretpassword")
+</code></pre>
+<h1>Server</h1>
+
+<h2>.allDbs()</h2>
+
+<h3>CouchDB.allDbs()</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to "_all_dbs".</p>
+
+<h3>Returns</h3>
+
+<p>An array with all the databases.</p>
+
+<h2>.getVersion()</h2>
+
+<h3>CouchDB.getVersion()</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to "/".</p>
+
+<h3>Returns</h3>
+
+<p>The version of the CouchDB installation.</p>
+
+<h2>.replicate()</h2>
+
+<h3>CouchDB.replicate(source, target, replication_options)</h3>
+
+<h3>Description</h3>
+
+<p>Replicates the content of the source db to the target db.</p>
+
+<h3>Results</h3>
+
+<p>The target db contains all the documents from the source db.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok": true, "session_id": "a session id", "source_last_seq": 1, "history": [{"session_id": "a session id", "start_time": "start time", "end_time": "end time", "start_last_seq": 0, "end_last_seq": 1, "recorded_seq": 1, "missing_checked": 0, "missing_found": 1, "docs_read": 1, "docs_written": 1, "doc_write_failures": 0}]}
+</code></pre>
+
+<h3>Example</h3>
+
+<p>With the create_target option, the target db gets created if it doesn't already exist:</p>
+
+<pre><code>CouchDB.replicate(http://localhost:5984/test_db, http://localhost:5984/test_db2, {"body" : {"create_target":true}})
+</code></pre>
+
+<h2>.newXhr()</h2>
+
+<h3>CouchDB.newXhr()</h3>
+
+<h3>Description</h3>
+
+<p>Returns an XMLHTTPRequest or an ActiveXObject, depending on the OS. If no XMLHTTPRequest support is detected, an error is thrown.</p>
+
+<h3>Returns</h3>
+
+<p>A new XMLHTTPRequest or nothing.</p>
+
+<h2>.request()</h2>
+
+<h3>CouchDB.request(method, uri, options)</h3>
+
+<h3>Description</h3>
+
+<p>Creates a <a href="/newXhr">new XMLHTTPRequest</a>. If the URI parameter doesn't start with "http://", the URI is prefixed with the CouchDB urlPrefix. If there are headers given in the options hash, they are set via setRequestHeader. The request is sent with the specified method.</p>
+
+<h3>Results</h3>
+
+<p>The XMLHTTPRequest has been sent with the given parameters.</p>
+
+<h3>Returns</h3>
+
+<p>A new XMLHTTPRequest with readyState 4.</p>
+
+<h3>Example</h3>
+
+<pre><code>CouchDB.request("GET", "/", {"headers": {"X-Couch-Full-Commit":"true"}});
+</code></pre>
+
+<h2>.requestStats()</h2>
+
+<h3>CouchDB.requestStats(module, key, test)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to "/_stats/module/key".</p>
+
+<h3>Returns</h3>
+
+<p>Statistics about the specified module and key.</p>
+
+<h3>Example</h3>
+
+<p>This returns the number of open databases:</p>
+
+<pre><code>CouchDB.requestStats('couchdb', 'open_databases', test);
+</code></pre>
+
+<p>When the last argument is not null, "?flush=true" is appended to the request.</p>
+
+<h2>.newUuids()</h2>
+
+<h3>CouchDB.newUuids(amount, buffer)</h3>
+
+<h3>Description</h3>
+
+<p>The CouchDB.uuids_cache is filled with as many UUIDs as specified in the buffer parameter, or with 100. The next time newUuids is called, they aren't requested from CouchDB, but taken directly from this cache if the cache contains enough of them.</p>
+
+<h3>Returns</h3>
+
+<p>An array with the specified amount of UUIDs.</p>
+
+<h3>Example</h3>
+
+<p>The first request gives you 10 UUIDs, the second 125.</p>
+
+<pre><code>CouchDB.newUuids(10);
+CouchDB.newUuids(125, 60);
+</code></pre>
+
+<p>The uuids_cache now contains 160 UUIDs.</p>
+
+<h2>.maybeThrowError()</h2>
+
+<h3>CouchDB.maybeThrowError(request)</h3>
+
+<h3>Description</h3>
+
+<p>Throws an error when the given request has a status greater than 400.</p>
+
+<h3>Example</h3>
+
+<pre><code>var req = CouchDB.request("GET", "/nonexisting_db")
+</code></pre>
+
+<p>results in a 404 error, so</p>
+
+<pre><code>CouchDB.maybeThrowError(req)
+</code></pre>
+
+<p>returns</p>
+
+<pre><code>{"error": "not_found", "reason": "no_db_file"}
+</code></pre>
+
+<h2>.params()</h2>
+
+<h3>CouchDB.params(options)</h3>
+
+<h3>Description</h3>
+
+<p>Turns a json object into a http params string.</p>
+
+<h3>Returns</h3>
+
+<p>A string with the keys and values separated by "=" and "&amp;" or an empty string when the options are empty.</p>
+
+<h3>Example</h3>
+
+<pre><code>CouchDB.params({"key":"value", "key2":"value2"})
+</code></pre>
+
+<p>returns</p>
+
+<pre><code>"key=value&amp;key2=value2"
+</code></pre>
+<h1>Database</h1>
+
+<h2>Database Intro</h2>
+
+<p>A new db is specified like this:</p>
+
+<pre><code>db = $.couch.db("spec_db");
+</code></pre>
+
+<p>It then has to be <a href="/create">created</a> before you can do anything with it.</p>
+
+<h2>.compact()</h2>
+
+<h3>db.compact(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a POST request to the db and "_compact". Compacts the db.</p>
+
+<h3>Response</h3>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h2>.viewCleanup()</h2>
+
+<h3>db.viewCleanup(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a POST request to the db and "_view_cleanup". Cleans old view output from disk.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h2>.compactView()</h2>
+
+<h3>db.compactView(groupname, options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a POST request to the db, "_compact" and the groupname. Cleans old output from this view from disk.
+Raises a 404 error when the design doesn't exist.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h2>.create()</h2>
+
+<h3>db.create(options)</h3>
+
+<h3>Description</h3>
+
+<p>Creates the db.</p>
+
+<h3>Results</h3>
+
+<p>The db is created, with update sequence 0.</p>
+
+<h3>Response</h3>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h2>.drop()</h2>
+
+<h3>db.drop(options)</h3>
+
+<h3>Description</h3>
+
+<p>Deletes the db.</p>
+
+<h3>Results</h3>
+
+<p>The db is deleted.</p>
+
+<h3>Response</h3>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h2>.info()</h2>
+
+<h3>db.info(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to the db.</p>
+
+<h3>Response</h3>
+
+<p>db_name, doc_count, doc_del_count, update_seq, purge_seq, compact_running, disk_size, instance_start_time, disk_format_version</p>
+
+<h2>.allDocs()</h2>
+
+<h3>db.allDocs(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to "_all_docs" with the options as params.
+Options can include the <a href="http://wiki.apache.org/couchdb/HTTP_view_API#Querying_Options">Querying Options of the HTTP view API</a>.</p>
+
+<h3>Response</h3>
+
+<p>The total number of rows and an array of rows, each row containing one result of the query.</p>
+
+<h2>.query()</h2>
+
+<h3>db.query(mapFun, reduceFun, language, options)</h3>
+
+<h3>Description</h3>
+
+<p>Applies the mandatory map function and the optional reduce function to the contents of database and returns the results.
+Options can include the <a href="http://wiki.apache.org/couchdb/HTTP_view_API#Querying_Options">Querying Options of the HTTP view API</a>.
+The language of the query has to be specified when another language than the default JavaScript is used. <a href="/http://wiki.apache.org/couchdb/EnableErlangViews">Erlang views have to be enabled</a> beforehand.</p>
+
+<h3>Response</h3>
+
+<p>The total number of rows and an array of rows, each row containing one result of the query.</p>
+
+<h3>Example</h3>
+
+<pre><code>db.query("function(doc) { emit(doc._id, null); }", null, "javascript", {})
+</code></pre>
+
+<h2>.view()</h2>
+
+<h3>db.view(viewname, options)</h3>
+
+<h3>Description</h3>
+
+<p>Applies the view to the contents of database and returns the results. When there are no keys given, it does a GET request to the view path with the options as params, or a POST request with the keys as body.
+Options can include the <a href="http://wiki.apache.org/couchdb/HTTP_view_API#Querying_Options">Querying Options of the HTTP view API</a>.
+The result can be specified more by querying only for single keys. Keys are part of the options hash.</p>
+
+<h3>Response</h3>
+
+<p>The total number of rows and an array of rows, each row containing one result of the query, or null when the view doesn't exist.</p>
+
+<h3>Example</h3>
+
+<pre><code>db.view('spec_db/viewname', {"include_docs":"true", "keys":["456"]})
+</code></pre>
+
+<h2>.getDbProperty()</h2>
+
+<h3>db.getDbProperty(propName, options, ajaxOptions)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to the db and the propName with the options as params.</p>
+
+<h3>Response</h3>
+
+<p>The property value.</p>
+
+<h2>.setDbProperty()</h2>
+
+<h3>db.setDbProperty(propName, propValue, options, ajaxOptions)</h3>
+
+<h3>Description</h3>
+
+<p>Does a PUT request to the db and the propName with the options as params and the propValue as body.</p>
+
+<h3>Results</h3>
+
+<p>The db property is set to the specified value.</p>
+
+<h3>Response</h3>
+
+<pre><code>{"ok" : true}
+</code></pre>
+<h1>Design Docs</h1>
+
+<h2>.designDocs()</h2>
+
+<h3>db.designDocs(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to "_all_docs" and filters out only the design documents.</p>
+
+<h3>Response</h3>
+
+<p>All design documents of a db.</p>
+
+<h2>.allApps()</h2>
+
+<h3>db.allApps(options)</h3>
+
+<h3>Description</h3>
+
+<p>I goes through <a href="/designDocs">every design document</a> in the db and looks if it  has an attachment with a member called "index.html" or a couchapp with a member called "index". If there is neither, it does nothing. If there is either, the "eachApp" method is called on each of those design documents.</p>
+
+<p>The options hash has to contain an "eachApp" attribute that contains a custom function with this signature:</p>
+
+<pre><code>eachApp: function(appName, appPath, ddoc)
+</code></pre>
+
+<p>The parameters being:</p>
+
+<ul>
+<li>appName: the name of the design document</li>
+<li>appPath: the full path to the index member in the design document</li>
+<li>ddoc: the design document</li>
+</ul>
+
+
+<h3>Results</h3>
+
+<p>The eachApp function is executed on every design document that has an "index" resp. "index.html" member.</p>
+
+<h3>Example</h3>
+
+<pre><code>var designDoc = {"_id" : "_design/with_attachments"};
+
+designDoc._attachments = {
+  "index.html" : {
+    "content_type": "text\/html",
+    // this is "&lt;html&gt;&lt;p&gt;Hi, here is index!&lt;/p&gt;&lt;/html&gt;", base64 encoded
+    "data": "PGh0bWw+PHA+SGksIGhlcmUgaXMgaW5kZXghPC9wPjwvaHRtbD4="
+  }
+};
+db.saveDoc(designDoc);
+
+db.allApps({
+  eachApp: function(appName, appPath, ddoc) {
+    // appName: "with_attachments"
+    // appPath: "/spec_db/_design/with_attachments/index.html"
+    // ddoc._id: "_design/with_attachments"
+  }
+});
+</code></pre>
+<h1>Documents</h1>
+
+<h2>.openDoc()</h2>
+
+<h3>db.open(docId, options, ajaxOptions)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to the db and the docId with the options as params.</p>
+
+<h3>Response</h3>
+
+<p>The document. When the document doesn't exist, a 404 error is raised.</p>
+
+<h2>.saveDoc()</h2>
+
+<h3>db.saveDoc(doc, options)</h3>
+
+<h3>Description</h3>
+
+<p>When the document doesn't contain an <em>id attribute it does a PUT request to the db and the docId with the options as params and the doc as body.
+When the document contains an </em>id attribute it does a POST request to the db with the options as params and the doc as body.</p>
+
+<h3>Results</h3>
+
+<p>A saved document with an ID.</p>
+
+<h3>Response</h3>
+
+<p>ID and revision of the saved document and</p>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h2>.bulkSave()</h2>
+
+<h3>db.bulkSave(docs, options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a POST request to the db and _bulk_docs with the options as params and the docs as body.</p>
+
+<h3>Results</h3>
+
+<p>All the documents are saved with an ID.</p>
+
+<h3>Response</h3>
+
+<p>An array with an element for each document that contains ID and revision of the document.</p>
+
+<h2>.removeDoc()</h2>
+
+<h3>db.removeDoc(doc)</h3>
+
+<h3>Description</h3>
+
+<p>Does a DELETE request to the db and the docId with the revision and the options as params. The current revision of the document has to be specified, otherwise the request results in a 409 error.</p>
+
+<h3>Results</h3>
+
+<p>The document is deleted (that means the document has the "deleted":true attribute).</p>
+
+<h3>Response</h3>
+
+<p>ID and revision of the deleted document and</p>
+
+<pre><code>{"ok" : true}
+</code></pre>
+
+<h2>.bulkRemove()</h2>
+
+<h3>db.bulkRemove(docs, options)</h3>
+
+<h3>Description</h3>
+
+<p>Sets "<em>deleted" to true in each document. Then does a POST request to the db and </em>bulk_docs with the options as params and the docs as body.</p>
+
+<h3>Results</h3>
+
+<p>All the documents are deleted (that means the documents have the "deleted":true attribute).)</p>
+
+<h3>Returns</h3>
+
+<p>An array with an element for each document that contains ID and revision of the deleted document.</p>
+
+<h2>.copyDoc()</h2>
+
+<h3>db.copyDoc(docId, options, ajaxOptions)</h3>
+
+<h3>Description</h3>
+
+<p>Does a COPY request to the db and the docId.
+The ajaxOptions hash has to contain a "headers" attribute, which has to contain a "Destination" attribute that specifies the ID that the new document should have.</p>
+
+<h3>Results</h3>
+
+<p>Another document is saved that has the same data and the new ID.
+When the new document already exists, its correct revision has to be provided in order to overwrite it. When there is no correct revision, an error is thrown.</p>
+
+<h3>Response</h3>
+
+<p>The new document.</p>
+
+<h3>Example</h3>
+
+<p>Copies a document with ID "123", the new document has ID "456":</p>
+
+<pre><code>db.copyDoc("123", {}, {
+  headers: {"Destination":"456"}
+});
+</code></pre>
+
+<p>When the new document already exists, its revision has to be part of the Destination:</p>
+
+<pre><code>db.copyDoc("123", {}, {
+  headers: {"Destination":"456?rev=" + revision_of_456}
+});
+</code></pre>
+<h1>Security</h1>
+
+<h2>Security Intro</h2>
+
+<p>See <a href="/security-intro">couch.js / Security Intro</a></p>
+
+<h2>.session()</h2>
+
+<h3>$.couch.session(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to "_session".</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok": true, "userCtx": {"name": "username", "roles": ["customrole"]}, "info": {"authentication_db": "_users", "authentication_handlers": ["oauth", "cookie", "default"], "authenticated": "cookie"}}
+</code></pre>
+
+<h3>Prerequisites</h3>
+
+<p>A user <a href="/session">session</a>, as created by <a href="/login">login</a>. When there is no session, userCtx.name is null.</p>
+
+<h2>.userDb(callback)</h2>
+
+<h3>$.couch.userDb(callback)</h3>
+
+<h3>Description</h3>
+
+<p>Creates <a href="/database-intro">a new db</a> with the name of the <a href="/security-intro">authentication db</a> and executes the callback function with the db as parameter.</p>
+
+<h2>.signup()</h2>
+
+<h3>$.couch.signup(user_doc, password, options)</h3>
+
+<h3>Description</h3>
+
+<ul>
+<li>Hashes the password</li>
+<li>Adds an empty roles array to the user_doc when not specified</li>
+<li>Adds an _id, composed of "org.couchdb.user:" and name, to the user_doc when not specified</li>
+<li>Saves the user_doc with options as parameters in the <a href="/userDb">userDb</a></li>
+<li>Performs the success callback on the saved user_doc</li>
+</ul>
+
+
+<h3>Response</h3>
+
+<p>The saved user_doc.</p>
+
+<h3>Results</h3>
+
+<p>The user_doc is saved in the <a href="/userDb">userDb</a>.</p>
+
+<h2>.login()</h2>
+
+<h3>$.couch.login(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a POST request to "_session" with username and password, they have to be present in the options hash.
+Throws a 404 error when the password is wrong or there is no user with that username stored in the <a href="/userDb">userDb</a>.</p>
+
+<h3>Results</h3>
+
+<p>A created <a href="/session">session</a> with the user name and roles.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok": true, "name": "username", "roles": ["customrole"]}
+</code></pre>
+
+<h3>Prerequisites</h3>
+
+<p>A <a href="/signup">signed up user</a>, saved in an <a href="/security-intro">authentication db</a>.</p>
+
+<h2>.logout()</h2>
+
+<h3>$.couch.logout(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a DELETE request to "_session".</p>
+
+<h3>Results</h3>
+
+<p>The <a href="/session">session's</a> user name is set to null and the custom role is removed from the roles array.</p>
+
+<h3>Returns</h3>
+
+<pre><code>{"ok": true}
+</code></pre>
+
+<h3>Prerequisites</h3>
+
+<p>A user <a href="/session">session</a>, as created by <a href="/login">login</a>.</p>
+<h1>Intro</h1>
+
+<p>To get the results of all the methods, include these callbacks in the options hash, for example:</p>
+
+<pre><code>$.couch.activeTasks({
+  success: function(resp){ 
+    console.log(resp); 
+  },
+  error: function(status, error, reason){
+    console.log(status, error, reason);
+  }
+});
+</code></pre>
+
+<h1>Server</h1>
+
+<h2>.activeTasks()</h2>
+
+<h3>$.couch.activeTasks(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to "_active_tasks".</p>
+
+<h3>Response</h3>
+
+<p>An array with all the active tasks, each entry containing type, PID, target and status of the task, or an empty array when there are no active tasks.</p>
+
+<h2>.allDbs()</h2>
+
+<h3>$.couch.allDbs(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to "_all_dbs".</p>
+
+<h3>Response</h3>
+
+<p>An array with all the databases.</p>
+
+<h2>.config()</h2>
+
+<h3>CouchDB.config(options, section, option, value)</h3>
+
+<h3>Description</h3>
+
+<p>Retreives or updates the server configuration.</p>
+
+<h3>Results</h3>
+
+<p>When called with section, option and value, the option is updated to the value.
+When called with section, option and null, the option is removed from the section.</p>
+
+<h3>Response</h3>
+
+<ul>
+<li>Without options: All the config settings</li>
+<li>With a section: The config section</li>
+<li>With a section, an option and a value: an empty string</li>
+<li>With a section, an option and null: the value the option had before</li>
+</ul>
+
+
+<h3>Example</h3>
+
+<p>Gets all the config settings:</p>
+
+<pre><code>$.couch.config();
+</code></pre>
+
+<p>Gets a specific config setting:</p>
+
+<pre><code>$.couch.config({}, "couchdb");
+</code></pre>
+
+<p>Updates a config setting:</p>
+
+<pre><code>$.couch.config({}, "couchdb", "max_dbs_open", "120");
+</code></pre>
+
+<p>Deletes a config setting:</p>
+
+<pre><code>$.couch.config({}, "couchdb", "max_dbs_open", null);
+</code></pre>
+
+<h2>.info()</h2>
+
+<h3>CouchDB.info(options)</h3>
+
+<h3>Description</h3>
+
+<p>Does a GET request to "/".</p>
+
+<h3>Response</h3>
+
+<p>The version of the CouchDB installation.</p>
+
+<h2>.replicate()</h2>
+
+<h3>CouchDB.replicate(source, target, ajaxOptions, replicationOptions)</h3>
+
+<h3>Description</h3>
+
+<p>Replicates the content of the source db to the target db.</p>
+
+<h3>Results</h3>
+
+<p>The target db contains all the documents from the source db.</p>
+
+<h3>Response</h3>
+
+<pre><code>{"ok": true, "session_id": "a session id", "source_last_seq": 1, "history": [{"session_id": "a session id", "start_time": "start time", "end_time": "end time", "start_last_seq": 0, "end_last_seq": 1, "recorded_seq": 1, "missing_checked": 0, "missing_found": 1, "docs_read": 1, "docs_written": 1, "doc_write_failures": 0}]}
+</code></pre>
+
+<h3>Example</h3>
+
+<p>With the create_target option, the target db gets created if it doesn't already exist:</p>
+
+<pre><code>CouchDB.replicate(http://localhost:5984/test_db, http://localhost:5984/test_db2, {}, {"create_target":true})
+</code></pre>
+
+<h2>.newUUID()</h2>
+
+<h3>CouchDB.newUUID(cacheNum)</h3>
+
+<h3>Description</h3>
+
+<p>fill the uuidCache with the specified number minus 1
+The CouchDB.uuidCache is filled with as many UUIDs as specified in the cacheNum parameter minus 1. The next time newUUID is called, the new UUID isn't requested from CouchDB, but taken directly from this cache if it's not empty.</p>
+
+<h3>Response</h3>
+
+<p>A new UUID, either from the cache or from the server.</p>
+</body>
+</html>
+
